@@ -3,10 +3,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits, Intents } = require('discord.js');
 const { TOKEN } = require('./config.json');
+const EventEmitter = require('node:events');
+const musicEmitter = new EventEmitter();
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] });
 
+client.queue = new Collection()
 client.commands = new Collection();
 
 const commandsPath = path.join(__dirname, 'commands');
@@ -33,11 +36,34 @@ client.on(Events.InteractionCreate, interaction => {
 		return;
 	}
 
-	try {
-		command.execute(interaction);
-	} catch (error) {
-		console.error(error);
-		interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+	if(command.passClient && command.passEmitter) {
+		try {
+			command.execute(client, musicEmitter, interaction);
+		} catch (error) {
+			console.error(error);
+			interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	} else if(command.passEmitter) {
+		try {
+			command.execute(musicEmitter, interaction);
+		} catch (error) {
+			console.error(error);
+			interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	} else if(command.passClient) {
+		try {
+			command.execute(client, interaction);
+		} catch (error) {
+			console.error(error);
+			interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
+	} else {
+		try {
+			command.execute(interaction);
+		} catch (error) {
+			console.error(error);
+			interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+		}
 	}
 });
 

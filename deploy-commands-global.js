@@ -1,15 +1,10 @@
 const { REST, Routes } = require('discord.js');
 const { clientId, devGuildId, TOKEN } = require('./config.json');
 const fs = require('node:fs');
-const guild = client.guilds.cache.get(devGuildId);
-
 const commands = [];
+
 // Grab all the command files from the commands directory you created earlier
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-
-//Clear all dev server commands
-//This prevents duplicate commands when a command is published globally
-guild.commands.set([]);
 
 // Grab the SlashCommandBuilder#toJSON() output of each command's data for deployment
 for (const file of commandFiles) {
@@ -21,17 +16,25 @@ for (const file of commandFiles) {
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 // and deploy your commands!
+
+
 (async () => {
 	try {
+		
+		await rest.put(
+			Routes.applicationGuildCommands(clientId, devGuildId),
+			{ body: [] },
+			);
+			
+			// The put method is used to fully refresh all commands in the guild with the current set
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-		// The put method is used to fully refresh all commands in the guild with the current set
 		const data = await rest.put(
 			Routes.applicationCommands(clientId),
 			{ body: commands },
 		);
 
-		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+		console.log(`Successfully reloaded ${data.length} application (/) commands!`);
 	} catch (error) {
 		// And of course, make sure you catch and log any errors!
 		console.error(error);

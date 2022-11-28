@@ -1,45 +1,56 @@
-const lib = require('lib')({token: process.env.STDLIB_SECRET_TOKEN});
-
 const { SlashCommandBuilder } = require('discord.js');
+const fs = require('node:fs');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('ping')
-		.setDescription('A cute little tutorial command that replies with Pong!'),
-	async execute(interaction) {
-		await lib.discord.channels['@0.3.2'].messages.create({
-            "channel_id": `${context.params.event.channel_id}`,
-            "content": "",
-            "tts": false,
-            "components": [
-              {
-                "type": 1,
-                "components": [
-                  {
-                    "style": 3,
-                    "label": `Back`,
-                    "custom_id": `row_0_button_0`,
-                    "disabled": false,
-                    "type": 2
-                  },
-                  {
-                    "style": 3,
-                    "label": `Next`,
-                    "custom_id": `row_0_button_1`,
-                    "disabled": false,
-                    "type": 2
-                  }
-                ]
-              }
-            ],
-            "embeds": [
-              {
-                "type": "rich",
-                "title": `title`,
-                "description": `**desc**\ncry about it`,
-                "color": 0x00FFFF
-              }
-            ]
-          });
-	},
+		.setName('help')
+		.setDescription('displays all commands'),
+	async execute(client, interaction) {
+  
+    await interaction.reply({
+      "embeds": [
+        {
+          "type": "rich",
+          "title": `Commands`,
+          "description": buildDescription(client),
+          "color": 0xe67c00
+        }
+      ]
+    });
+  },
+  passClient: true,
+  passEmitter: false,
+  type: 2,
 };
+
+function buildDescription(client)
+{
+  const commands = [];
+  const id1 = [];
+  const id2 = [];
+
+  const commandFiles = fs.readdirSync('./commands/').filter(file => file.endsWith('.js'));
+
+    //type 1 = music
+    //type 2 = misc
+  for (const file of commandFiles) {
+    const command = require(`./${file}`);
+    if(command.type == 2)
+      id2.push(command.data.toJSON().name);
+    else 
+      id1.push(command.data.toJSON().name);
+
+  }
+
+  let desc = `**Music Commands: (${id1.length})\n**`;
+
+    for(let i = 0; i < id1.length; i++)
+      (i + 1 < id1.length) ? desc += `\`/${id1[i]}\`, ` : desc += `\`/${id1[i]}\``;
+  
+  desc += `\n **Misc. Commands: (${id2.length})\n**`
+  
+    for(let i = 0; i < id2.length; i++)
+      (i + 1 < id2.length) ? desc += `\`/${id2[i]}\`, ` : desc += `\`/${id2[i]}\``;
+    
+  return desc;
+}
