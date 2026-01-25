@@ -27,7 +27,7 @@ module.exports = {
 					},
 				]
 			  });
-		} else if(track = voiceInfo.queue.length && track != voiceInfo.queueInfo.currentTrack) {
+		} else if(track == voiceInfo.queue.length && track != voiceInfo.queueInfo.currentTrack) {
 			console.log(voiceInfo.queue.splice(track, 1))
 			if(track < voiceInfo.queueInfo.currentTrack)
 			{

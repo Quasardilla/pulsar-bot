@@ -426,7 +426,9 @@ function playFirstTrack(interaction) {
 
     console.log(chalk.blue(musicFile))
 
+    console.log('1')
     resource = createAudioResource(`bin/${guildId}/ytdl/${musicFile}`)
+    console.log('2')
     player.play(resource);
 
     voiceInfo.voice.idleInterval = setInterval(() => {
